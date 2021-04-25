@@ -17,10 +17,10 @@ import matplotlib.pyplot as plt
 import itertools
 from sklearn.metrics import confusion_matrix
 from datetime import datetime
-from IPython.core.display import display, HTML
+# from IPython.core.display import display, HTML
 import seaborn as sns
 
-display(HTML("<style>div.output_scroll { height: 100em; }</style>"))
+# display(HTML("<style>div.output_scroll { height: 100em; }</style>"))
 
 dep_var = 'Label'
 cat_names = ['Dst Port', 'Protocol']
@@ -239,25 +239,7 @@ def get_dls(df, path, bs, valid_idx=None):
         val_bs=bs
     )
 
-def perf_measure(y_actual, y_hat):
-    TP = 0
-    FP = 0
-    TN = 0
-    FN = 0
-
-    for i in range(len(y_hat)): 
-        if y_actual[i]==y_hat[i]==1:
-           TP += 1
-        if y_hat[i]==1 and y_actual[i]!=y_hat[i]:
-           FP += 1
-        if y_actual[i]==y_hat[i]==0:
-           TN += 1
-        if y_hat[i]==0 and y_actual[i]!=y_hat[i]:
-           FN += 1
-
-    return(TP, FP, TN, FN)
-
-def run(dataFile, epochs=2):
+def run(dataFile, epochs=10):
     seed = 7
     np.random.seed(seed)
     data = load(dataFile)
@@ -272,7 +254,7 @@ def run(dataFile, epochs=2):
     valid_data = train_data.loc[valid_idx].reset_index(drop=True)
     logfile = 'logs/train_'  + dataFile + '.log'
     
-    bs = 1000
+    bs = 48
     dls = get_dls(train_data, path=dataPath, bs=bs, valid_idx=valid_idx)
     
     model = tabular_learner(
@@ -283,10 +265,11 @@ def run(dataFile, epochs=2):
         cbs=[CSVLogger(logfile, True), ShowGraphCallback()]
     )
         
-    lr_min,lr_steep = model.lr_find()
-    print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
+#     lr_min,lr_steep = model.lr_find()
+#     print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
     
-    model.fit_one_cycle(epochs, lr_max=slice(lr_min, lr_steep))
+#     model.fit_one_cycle(epochs, lr_max=slice(lr_min, lr_steep))
+    model.fit(epochs, 3e-3)
     model.save('{}.model'.format(os.path.basename(dataFile)))
 
     model.recorder.plot_metrics()
@@ -313,7 +296,7 @@ def run(dataFile, epochs=2):
     print('Confusion matrix:')
     print(cnf_matrix)
     
-    lb = ['Benign', 'URL-Webshell', 'Webshell']
+    lb = ['Benign', 'Webshell']
     # Plot non-normalized confusion matrix
     class_names = le.classes_
     plt.figure()
@@ -327,4 +310,4 @@ def run(dataFile, epochs=2):
     plt.show()
     plt.close()
 
-run('webshell_binary_data.csv')
+run('webshell_binary_file2.csv')
