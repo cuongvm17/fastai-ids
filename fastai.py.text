@@ -46,7 +46,7 @@ cont_names = ['Timestamp', 'Flow Duration', 'Tot Fwd Pkts',
               'Fwd Seg Size Min', 'Active Mean', 'Active Std', 'Active Max',
               'Active Min', 'Idle Mean', 'Idle Std', 'Idle Max', 'Idle Min']
 
-dataPath = '../data' 
+dataPath = 'data' 
 resultPath = 'results'
 imagePath = 'images/'
 procs = [FillMissing, Categorify, Normalize]
@@ -239,15 +239,23 @@ def get_dls(df, path, bs, valid_idx=None):
         val_bs=bs
     )
 
-def predict(learn, test_data):
-    le = LabelEncoder()
-    y_true = le.fit_transform(test_data.Label)
-    y_pred = []
+def perf_measure(y_actual, y_hat):
+    TP = 0
+    FP = 0
+    TN = 0
+    FN = 0
 
-    for i in test_data.index:
-        row, y_hat, probs = learn.predict(test_data[cat_names + cont_names].loc[i])
-        y_pred.append(y_hat)
-    print(classification_report(y_true, np.array(y_pred), target_names=le.classes_))
+    for i in range(len(y_hat)): 
+        if y_actual[i]==y_hat[i]==1:
+           TP += 1
+        if y_hat[i]==1 and y_actual[i]!=y_hat[i]:
+           FP += 1
+        if y_actual[i]==y_hat[i]==0:
+           TN += 1
+        if y_hat[i]==0 and y_actual[i]!=y_hat[i]:
+           FN += 1
+
+    return(TP, FP, TN, FN)
 
 def run(dataFile, epochs=2):
     seed = 7
@@ -319,4 +327,4 @@ def run(dataFile, epochs=2):
     plt.show()
     plt.close()
 
-run('dataCleaned.csv')
+run('webshell_binary_data.csv')

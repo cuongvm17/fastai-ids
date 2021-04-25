@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.utils import shuffle
 
 dataPath = '../data' 
-fileNames = ['23-02-2018.csv']
+fileNames = ['dataCleaned.csv']
 
 df = pd.read_csv(os.path.join(dataPath, fileNames[0]))
 
@@ -19,9 +19,14 @@ for name in fileNames[1:]:
 
 df = shuffle(df)
 print('creating binary file')
-df['Label'] = df['Label'].map(
-    {'Benign': 'Benign', 'Brute Force -Web': 'Malicious', 'Brute Force -XSS': 'Malicious',
-     'SQL Injection': 'Malicious'})
+print(df.Label.unique())
+# df['Label'] = df['Label'].map(
+#     {'Benign': 'Benign', 'Brute Force -Web': 'Malicious', 'Brute Force -XSS': 'Malicious',
+#      'SQL Injection': 'Malicious'})
 
-outFile = os.path.join(dataPath, 'ids_binary_data')
+df['Label'] = df['Label'].map(
+    {'Benign': 'Benign', 'URL-Webshell-command': 'Webshell', 'Webshell': 'Webshell',
+     'Webshell-command': 'Webshell'})
+     
+outFile = os.path.join(dataPath, 'webshell_binary_file2')
 df.to_csv(outFile + '.csv', index=False)
