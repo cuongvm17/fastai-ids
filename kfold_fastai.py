@@ -267,7 +267,10 @@ def run(dataFile, epochs=10):
             cbs=[CSVLogger(logfile, True), ShowGraphCallback()]
         )
 
-        model.fit(epochs, lr)
+        lr_min,lr_steep = model.lr_find()
+        print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
+        
+        model.fit_one_cycle(epochs, lr_max=slice(lr_min, lr_steep))
         model.save('{}.model'.format(os.path.basename(dataFile)))
 
         model.recorder.plot_metrics()
