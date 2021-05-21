@@ -275,31 +275,54 @@ def run(dataFile, epochs=10):
 
         model.recorder.plot_metrics()
 
+        learn = tabular_learner(
+            dls, 
+            layers=[200, 100], 
+            metrics=[accuracy]
+        )
+        learn.fit(epochs, 1e-2)
+
         le = LabelEncoder()
         y_true = le.fit_transform(test_data.Label)
+        tdl = dls.test_dl(test_data)
 
         time_before_predict = datetime.now()
-        preds, targs = model.get_preds()
+        preds, targs = model.get_preds(dl = tdl)
         time_after_predict = datetime.now()
-        
+
+        preds1, targs1 = learn.get_preds(dl = tdl)
+
         y_pred = np.argmax(preds, axis=1)
+        y_pred1 = np.argmax(preds1, axis=1)
+
         print("Time predict:")
         print(time_after_predict - time_before_predict)
         
         y_pred = np.array(y_pred)
+        y_pred1 = np.array(y_pred1)
         class_report = classification_report(y_true, y_pred, target_names=le.classes_)
         plot_classification_report(class_report)
         
         cnf_matrix = confusion_matrix(y_true, y_pred)
+        cnf_matrix1 = confusion_matrix(y_true, y_pred1)
         print('Confusion matrix:')
         print(cnf_matrix)
+        print('Confusion matrix canada:')
+        print(cnf_matrix1)
         
-        lb = ['Benign', 'Webshell']
         # Plot non-normalized confusion matrix
         class_names = le.classes_
         plt.figure()
         plot_confusion_matrix(cnf_matrix, classes=class_names, title='Confusion matrix, without normalization')
         plt.savefig(imagePath + '_fold_' + str(fold) + 'confusion_without_normalization.png')
+        plt.close()
+
+        # Plot non-normalized confusion matrix
+        class_names = le.classes_
+        plt.figure()
+        plot_confusion_matrix(cnf_matrix1, classes=class_names, title='Confusion matrix, without normalization')
+        plt.savefig(imagePath + '_fold_canada_' + str(fold) + 'confusion_without_normalization.png')
+        plt.close()
 
         # Plot normalized confusion matrix
         plt.figure()
